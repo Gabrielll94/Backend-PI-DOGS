@@ -4,8 +4,9 @@ const { Router } = require('express');
 const temperaments = require('./temperments')
 const dogs = require('./dogs')
 const breeds = require('./breeds');
-
-const router = Router();
+// Crear un nuevo enrutador:
+const router = Router(); // clase de Express que nos permite crear routers modulares que podemos montar en nuestra
+// aplicación.
 
 // Configurar los routers
 // Ejemplo: router.use('/auth', authRouter);

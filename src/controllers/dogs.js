@@ -1,43 +1,45 @@
-const axios = require("axios");
+const axios = require("axios"); //biblioteca popular para realizar solicitudes HTTP.
 require("dotenv").config();
-const { API_URL, API_KEY } = process.env;
+const { API_URL, API_KEY } = process.env; //se espera que estén definidos en las variables de entorno.
 
 const { Dog, Temperament } = require("../db");
-   
-// Get data from the API
+
+// Recuperación de datos API:
 const getApiData = async () => {
 	try {
-	  const { data } = await axios.get(API_URL);
-  
-	  return data.map((d) => {
+	const { data } = await axios.get(API_URL); // procesa los datos recibidos, extrae información relevante como
+  // identificación, nombre, peso, altura, temperamento, etc., y devuelve una serie de objetos formateados.
+   
+	return data.map((d) => {
 		let [weightMin, weightMax] = d.weight.metric.split("-");
 		let [heightMin, heightMax] = d.height.metric.split("-");
 		let temperament = d.hasOwnProperty("temperament")
-		  ? d.temperament.split(/\s*(?:,|$)\s*/)
-		  : [];
+		? d.temperament.split(/\s*(?:,|$)\s*/)
+		: [];
 		const result = {
-		  id: d.id,
-		  name: d.name,
-		  weightMin: Number(weightMin),
-		  weightMax: Number(weightMax),
-		  heightMin: Number(heightMin),
-		  heightMax: Number(heightMax),
-		  temperament: temperament,
-		  lifeSpan: d.life_span,
-		  bredFor: d.bred_for,
-		  image: d.reference_image_id,
-		  source: "API",
+		id: d.id,
+		name: d.name,
+		weightMin: Number(weightMin),
+		weightMax: Number(weightMax),
+		heightMin: Number(heightMin),
+		heightMax: Number(heightMax),
+		temperament: temperament,
+		lifeSpan: d.life_span,
+		bredFor: d.bred_for,
+		image: d.reference_image_id,
+		source: "API",
 		};
 		return result;
-	  });
+	});
 	} catch (error) {
-	  console.error("getApiData: ", error.message);
-	  throw error;
+	console.error("getApiData: ", error.message);
+	throw error;
 	}
   };
 
 // Get Data from database
-const getDbData = async () => {
+const getDbData = async () => { // recupera datos de perros de la base de datos utilizando Sequelize.
+  // los datos recuperados tienen un formato similar a los datos de API.
   try {
     const dogs = await Dog.findAll({
       include: {
@@ -78,9 +80,10 @@ const getDbData = async () => {
 };
 
 // Join all the data
-const getAllData = async () => {
+const getAllData = async () => { //  combina datos obtenidos de la API y la base de datos.
   const api = await getApiData();
   const db = await getDbData();
+  console.log(db);
 
   const all = [...api, ...db];
   // sort by default alphabetic ASC
@@ -89,19 +92,20 @@ const getAllData = async () => {
   return all;
 };
 
-// Get data by idRaza
+// Recuperar datos por ID de raza:
 const getByIdRaza = async (idRaza) => {
   try {
-    const data = await getAllData();
+    const data = await getAllData(); // Llama getAllData para obtener todos los datos y luego busca al perro con la
+    // identificación especificada.
     const dog = data.find((d) => d.id.toString() === idRaza.toString());
     return dog || false;
-  } catch (error) {
+  } catch (error) { // Si se produce un error durante el proceso, se detecta, se registra y se vuelve a generar.
     console.error("getByIdRaza: ", error.message);
     throw error;
   }
 };
 
-// Create new breed
+// Agregar nueva raza:
 const addNewBreed = async ({
   name,
   heightMin,
@@ -157,7 +161,7 @@ const addNewBreed = async ({
 };
 
 
-// Delete from database
+// Eliminar raza de la base de datos:
 const deleteDbBreed = async (id) => {
   try {
     const res = await Dog.destroy({
